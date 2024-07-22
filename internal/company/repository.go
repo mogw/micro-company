@@ -12,9 +12,9 @@ import (
 
 type Repository interface {
 	CreateCompany(ctx context.Context, company *Company) error
-	UpdateCompany(ctx context.Context, uuid uuid.UUID, update bson.M) error
-	DeleteCompany(ctx context.Context, uuid uuid.UUID) error
-	GetCompany(ctx context.Context, uuid uuid.UUID) (*Company, error)
+	UpdateCompany(ctx context.Context, id uuid.UUID, update bson.M) error
+	DeleteCompany(ctx context.Context, id uuid.UUID) error
+	GetCompany(ctx context.Context, id uuid.UUID) (*Company, error)
 }
 
 type repository struct {
@@ -31,20 +31,20 @@ func (r *repository) CreateCompany(ctx context.Context, company *Company) error 
 	return err
 }
 
-func (r *repository) UpdateCompany(ctx context.Context, uuid uuid.UUID, update bson.M) error {
-	filter := bson.M{"uuid": uuid}
+func (r *repository) UpdateCompany(ctx context.Context, id uuid.UUID, update bson.M) error {
+	filter := bson.M{"_id": id}
 	_, err := r.collection.UpdateOne(ctx, filter, bson.M{"$set": update}, options.Update().SetUpsert(false))
 	return err
 }
 
-func (r *repository) DeleteCompany(ctx context.Context, uuid uuid.UUID) error {
-	filter := bson.M{"uuid": uuid}
+func (r *repository) DeleteCompany(ctx context.Context, id uuid.UUID) error {
+	filter := bson.M{"_id": id}
 	_, err := r.collection.DeleteOne(ctx, filter)
 	return err
 }
 
-func (r *repository) GetCompany(ctx context.Context, uuid uuid.UUID) (*Company, error) {
-	filter := bson.M{"uuid": uuid}
+func (r *repository) GetCompany(ctx context.Context, id uuid.UUID) (*Company, error) {
+	filter := bson.M{"_id": id}
 	var company Company
 	err := r.collection.FindOne(ctx, filter).Decode(&company)
 	if err != nil {

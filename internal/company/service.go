@@ -9,9 +9,9 @@ import (
 
 type Service interface {
 	CreateCompany(ctx context.Context, company *Company) error
-	UpdateCompany(ctx context.Context, uuid uuid.UUID, update map[string]interface{}) error
-	DeleteCompany(ctx context.Context, uuid uuid.UUID) error
-	GetCompany(ctx context.Context, uuid uuid.UUID) (*Company, error)
+	UpdateCompany(ctx context.Context, id uuid.UUID, update map[string]interface{}) error
+	DeleteCompany(ctx context.Context, id uuid.UUID) error
+	GetCompany(ctx context.Context, id uuid.UUID) (*Company, error)
 }
 
 type service struct {
@@ -24,7 +24,7 @@ func NewService(repo Repository, producer kafka.Producer) Service {
 }
 
 func (s *service) CreateCompany(ctx context.Context, company *Company) error {
-	company.UUID = uuid.New()
+	company.ID = uuid.New()
 	if err := s.repo.CreateCompany(ctx, company); err != nil {
 		return err
 	}
@@ -37,12 +37,12 @@ func (s *service) CreateCompany(ctx context.Context, company *Company) error {
 	return s.produceEvent(event)
 }
 
-func (s *service) UpdateCompany(ctx context.Context, uuid uuid.UUID, update map[string]interface{}) error {
-	if err := s.repo.UpdateCompany(ctx, uuid, update); err != nil {
+func (s *service) UpdateCompany(ctx context.Context, id uuid.UUID, update map[string]interface{}) error {
+	if err := s.repo.UpdateCompany(ctx, id, update); err != nil {
 		return err
 	}
 
-	company, err := s.repo.GetCompany(ctx, uuid)
+	company, err := s.repo.GetCompany(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -55,13 +55,13 @@ func (s *service) UpdateCompany(ctx context.Context, uuid uuid.UUID, update map[
 	return s.produceEvent(event)
 }
 
-func (s *service) DeleteCompany(ctx context.Context, uuid uuid.UUID) error {
-	company, err := s.repo.GetCompany(ctx, uuid)
+func (s *service) DeleteCompany(ctx context.Context, id uuid.UUID) error {
+	company, err := s.repo.GetCompany(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := s.repo.DeleteCompany(ctx, uuid); err != nil {
+	if err := s.repo.DeleteCompany(ctx, id); err != nil {
 		return err
 	}
 
@@ -73,8 +73,8 @@ func (s *service) DeleteCompany(ctx context.Context, uuid uuid.UUID) error {
 	return s.produceEvent(event)
 }
 
-func (s *service) GetCompany(ctx context.Context, uuid uuid.UUID) (*Company, error) {
-	return s.repo.GetCompany(ctx, uuid)
+func (s *service) GetCompany(ctx context.Context, id uuid.UUID) (*Company, error) {
+	return s.repo.GetCompany(ctx, id)
 }
 
 func (s *service) produceEvent(event kafka.CompanyEvent) error {
@@ -84,5 +84,5 @@ func (s *service) produceEvent(event kafka.CompanyEvent) error {
 	// 	return err
 	// }
 
-	// return s.producer.Produce("company-events", event.Company.UUID[:], eventBytes)
+	// return s.producer.Produce("company-events", event.Company.ID[:], eventBytes)
 }

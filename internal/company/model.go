@@ -3,22 +3,20 @@ package company
 import (
 	"github.com/google/uuid"
 	"github.com/mogw/micro-company/internal/kafka"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Company struct {
-	ID                primitive.ObjectID `bson:"_id,omitempty"`
-	UUID              uuid.UUID          `bson:"uuid"`
-	Name              string             `bson:"name"`
-	Description       string             `bson:"description,omitempty"`
-	AmountOfEmployees int                `bson:"amount_of_employees"`
-	Registered        bool               `bson:"registered"`
-	Type              string             `bson:"type"`
+	ID                uuid.UUID `bson:"_id" json:"id"`
+	Name              string    `bson:"name" json:"name"`
+	Description       string    `bson:"description,omitempty" json:"description,omitempty"`
+	AmountOfEmployees int       `bson:"amount_of_employees" json:"amount_of_employees"`
+	Registered        bool      `bson:"registered" json:"registered"`
+	Type              string    `bson:"type" json:"type"`
 }
 
 func (c *Company) ToKafkaCompany() kafka.Company {
 	return kafka.Company{
-		UUID:              c.UUID,
+		ID:                c.ID,
 		Name:              c.Name,
 		Description:       c.Description,
 		AmountOfEmployees: c.AmountOfEmployees,
