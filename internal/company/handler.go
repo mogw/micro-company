@@ -15,11 +15,10 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service}
 }
 
-func (h *Handler) RegisterRoutes(router *gin.Engine) {
+func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	router.POST("/companies", h.CreateCompany)
 	router.PATCH("/companies/:id", h.UpdateCompany)
 	router.DELETE("/companies/:id", h.DeleteCompany)
-	router.GET("/companies/:id", h.GetCompany)
 }
 
 func (h *Handler) CreateCompany(c *gin.Context) {

@@ -29,9 +29,14 @@ func main() {
 	companyHandler := company.NewHandler(companyService)
 
 	router := gin.Default()
-	router.Use(auth.JWTMiddleware(cfg.JWTSecret))
 
-	companyHandler.RegisterRoutes(router)
+	// Public routes
+	router.GET("/companies/:id", companyHandler.GetCompany)
+
+	// Protected routes
+	authRoutes := router.Group("/")
+	authRoutes.Use(auth.JWTMiddleware(cfg.JWTSecret))
+	companyHandler.RegisterRoutes(authRoutes)
 
 	log.Println("Server is running on port 8080")
 	log.Fatal(router.Run(":8080"))

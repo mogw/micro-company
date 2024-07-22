@@ -35,9 +35,14 @@ func setupRouter() {
 	companyHandler := company.NewHandler(companyService)
 
 	router = gin.Default()
-	router.Use(auth.JWTMiddleware(cfg.JWTSecret))
 
-	companyHandler.RegisterRoutes(router)
+	// Public routes
+	router.GET("/companies/:id", companyHandler.GetCompany)
+
+	// Protected routes
+	authRoutes := router.Group("/")
+	authRoutes.Use(auth.JWTMiddleware(cfg.JWTSecret))
+	companyHandler.RegisterRoutes(authRoutes)
 }
 
 func TestMain(m *testing.M) {
@@ -47,7 +52,7 @@ func TestMain(m *testing.M) {
 
 func getToken() string {
 	// Implement JWT token generation or use a mock token for testing purposes
-	return "your_secret_key"
+	return "your_test_jwt_token"
 }
 
 func TestCreateCompany(t *testing.T) {
@@ -81,8 +86,7 @@ func TestCreateCompany(t *testing.T) {
 }
 
 func TestGetCompany(t *testing.T) {
-	token := getToken()
-
+	// No token needed for GET requests
 	comp := company.Company{
 		Name:              "Test Company Get",
 		Description:       "This is a test company for get",
@@ -93,7 +97,7 @@ func TestGetCompany(t *testing.T) {
 
 	jsonValue, _ := json.Marshal(comp)
 	req, _ := http.NewRequest("POST", "/companies", bytes.NewBuffer(jsonValue))
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Authorization", "Bearer "+getToken())
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()
@@ -105,7 +109,6 @@ func TestGetCompany(t *testing.T) {
 	json.Unmarshal(w.Body.Bytes(), &createdCompany)
 
 	req, _ = http.NewRequest("GET", "/companies/"+createdCompany.UUID.String(), nil)
-	req.Header.Set("Authorization", "Bearer "+token)
 
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -161,7 +164,6 @@ func TestUpdateCompany(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	req, _ = http.NewRequest("GET", "/companies/"+createdCompany.UUID.String(), nil)
-	req.Header.Set("Authorization", "Bearer "+token)
 
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -207,7 +209,6 @@ func TestDeleteCompany(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, w.Code)
 
 	req, _ = http.NewRequest("GET", "/companies/"+createdCompany.UUID.String(), nil)
-	req.Header.Set("Authorization", "Bearer "+token)
 
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
