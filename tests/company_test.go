@@ -47,7 +47,7 @@ func TestMain(m *testing.M) {
 
 func getToken() string {
 	// Implement JWT token generation or use a mock token for testing purposes
-	return "your_test_jwt_token"
+	return "your_secret_key"
 }
 
 func TestCreateCompany(t *testing.T) {
