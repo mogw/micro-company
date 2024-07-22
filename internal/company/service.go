@@ -2,6 +2,7 @@ package company
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/google/uuid"
 	"github.com/mogw/micro-company/internal/kafka"
@@ -79,10 +80,10 @@ func (s *service) GetCompany(ctx context.Context, id uuid.UUID) (*Company, error
 
 func (s *service) produceEvent(event kafka.CompanyEvent) error {
 	return nil
-	// eventBytes, err := json.Marshal(event)
-	// if err != nil {
-	// 	return err
-	// }
+	eventBytes, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
 
-	// return s.producer.Produce("company-events", event.Company.ID[:], eventBytes)
+	return s.producer.Produce("company-events", event.Company.ID[:], eventBytes)
 }
