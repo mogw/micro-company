@@ -15,6 +15,7 @@ type Repository interface {
 	UpdateCompany(ctx context.Context, id uuid.UUID, update bson.M) error
 	DeleteCompany(ctx context.Context, id uuid.UUID) error
 	GetCompany(ctx context.Context, id uuid.UUID) (*Company, error)
+	IsNameUnique(ctx context.Context, name string) (bool, error)
 }
 
 type repository struct {
@@ -27,7 +28,15 @@ func NewRepository(db *mongo.Client, dbName, collName string) Repository {
 }
 
 func (r *repository) CreateCompany(ctx context.Context, company *Company) error {
-	_, err := r.collection.InsertOne(ctx, company)
+	isUnique, err := r.IsNameUnique(ctx, company.Name)
+	if err != nil {
+		return err
+	}
+	if !isUnique {
+		return errors.New("company name must be unique")
+	}
+
+	_, err = r.collection.InsertOne(ctx, company)
 	return err
 }
 
@@ -54,4 +63,17 @@ func (r *repository) GetCompany(ctx context.Context, id uuid.UUID) (*Company, er
 		return nil, err
 	}
 	return &company, nil
+}
+
+func (r *repository) IsNameUnique(ctx context.Context, name string) (bool, error) {
+	filter := bson.M{"name": name}
+	var company Company
+	err := r.collection.FindOne(ctx, filter).Decode(&company)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return true, nil
+		}
+		return false, err
+	}
+	return false, nil
 }

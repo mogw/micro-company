@@ -59,7 +59,7 @@ func TestCreateCompany(t *testing.T) {
 	token := getToken()
 
 	comp := company.Company{
-		Name:              "Test Company",
+		Name:              "Company 1",
 		Description:       "This is a test company",
 		AmountOfEmployees: 10,
 		Registered:        true,
@@ -88,7 +88,7 @@ func TestCreateCompany(t *testing.T) {
 func TestGetCompany(t *testing.T) {
 	// No token needed for GET requests
 	comp := company.Company{
-		Name:              "Test Company Get",
+		Name:              "Company 2",
 		Description:       "This is a test company for get",
 		AmountOfEmployees: 20,
 		Registered:        true,
@@ -129,7 +129,7 @@ func TestUpdateCompany(t *testing.T) {
 	token := getToken()
 
 	comp := company.Company{
-		Name:              "Test Company Update",
+		Name:              "Company 3",
 		Description:       "This is a test company for update",
 		AmountOfEmployees: 30,
 		Registered:        true,
@@ -150,7 +150,7 @@ func TestUpdateCompany(t *testing.T) {
 	json.Unmarshal(w.Body.Bytes(), &createdCompany)
 
 	update := map[string]interface{}{
-		"name":                "Updated Company Name",
+		"name":                "Updated Company",
 		"amount_of_employees": 50,
 	}
 	jsonValue, _ = json.Marshal(update)
@@ -172,7 +172,7 @@ func TestUpdateCompany(t *testing.T) {
 
 	var updatedCompany company.Company
 	json.Unmarshal(w.Body.Bytes(), &updatedCompany)
-	assert.Equal(t, "Updated Company Name", updatedCompany.Name)
+	assert.Equal(t, "Updated Company", updatedCompany.Name)
 	assert.Equal(t, 50, updatedCompany.AmountOfEmployees)
 }
 
@@ -180,7 +180,7 @@ func TestDeleteCompany(t *testing.T) {
 	token := getToken()
 
 	comp := company.Company{
-		Name:              "Test Company Delete",
+		Name:              "Company 4",
 		Description:       "This is a test company for delete",
 		AmountOfEmployees: 40,
 		Registered:        true,
