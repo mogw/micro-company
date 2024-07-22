@@ -3,15 +3,21 @@ package kafka
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 )
 
-type Producer struct {
+type Producer interface {
+	Produce(topic string, key, value []byte) error
+	Close() error
+}
+
+type producer struct {
 	writer *kafka.Writer
 }
 
-func NewProducer(broker string) *Producer {
-	return &Producer{
+func NewProducer(broker string) Producer {
+	return &producer{
 		writer: &kafka.Writer{
 			Addr:     kafka.TCP(broker),
 			Balancer: &kafka.LeastBytes{},
@@ -19,7 +25,7 @@ func NewProducer(broker string) *Producer {
 	}
 }
 
-func (p *Producer) Produce(topic string, key, value []byte) error {
+func (p *producer) Produce(topic string, key, value []byte) error {
 	msg := kafka.Message{
 		Topic: topic,
 		Key:   key,
@@ -28,6 +34,20 @@ func (p *Producer) Produce(topic string, key, value []byte) error {
 	return p.writer.WriteMessages(context.Background(), msg)
 }
 
-func (p *Producer) Close() error {
+func (p *producer) Close() error {
 	return p.writer.Close()
+}
+
+type CompanyEvent struct {
+	Type    string  `json:"type"`
+	Company Company `json:"company"`
+}
+
+type Company struct {
+	UUID              uuid.UUID `json:"uuid"`
+	Name              string    `json:"name"`
+	Description       string    `json:"description"`
+	AmountOfEmployees int       `json:"amount_of_employees"`
+	Registered        bool      `json:"registered"`
+	Type              string    `json:"type"`
 }

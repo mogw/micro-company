@@ -9,6 +9,7 @@ import (
 	"github.com/mogw/micro-company/internal/company"
 	"github.com/mogw/micro-company/internal/config"
 	"github.com/mogw/micro-company/internal/db"
+	"github.com/mogw/micro-company/internal/kafka"
 )
 
 func main() {
@@ -20,12 +21,12 @@ func main() {
 	}
 	defer mongoClient.Disconnect(context.Background())
 
-	companyRepo := company.NewRepository(mongoClient, "companydb", "companies")
-	companyService := company.NewService(companyRepo)
-	companyHandler := company.NewHandler(companyService)
+	kafkaProducer := kafka.NewProducer(cfg.KafkaBroker)
+	defer kafkaProducer.Close()
 
-	// kafkaProducer := kafka.NewProducer(cfg.KafkaBroker)
-	// defer kafkaProducer.Close()
+	companyRepo := company.NewRepository(mongoClient, "companydb", "companies")
+	companyService := company.NewService(companyRepo, kafkaProducer)
+	companyHandler := company.NewHandler(companyService)
 
 	router := gin.Default()
 	router.Use(auth.JWTMiddleware(cfg.JWTSecret))
